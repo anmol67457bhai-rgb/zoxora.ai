@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="hi">
+<head>
+
+<meta charset="utf-8">
+<meta name="hyv-type" content="tool">
+<meta name="hyv-layout" content="document">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Zoxora - AI chat with Hinglish replies.">
+<meta name="theme-color" content="#0b0b14">
+<title>Zoxora - Your AI companion</title>
+<style>
+:root{
+  --bg:#0b0b14;
+  --panel:#11111c;
+  --panel-2:#181828;
+  --line:rgba(255,255,255,.08);
+  --text:#eeedf8;
+  --muted:#9d9cb8;
+  --violet:#8b5cf6;
+  --cyan:#22d3ee;
+  --grad:linear-gradient(135deg,#8b5cf6 0%,#22d3ee 100%);
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{height:100%}
+body{
+  margin:0;
+  height:100vh;
+  height:100dvh;
+  overflow:hidden;
+  background:
+    radial-gradient(900px 500px at 88% -12%,rgba(139,92,246,.18),transparent 60%),
+    radial-gradient(700px 480px at -12% 112%,rgba(34,211,238,.12),transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Layout ---------- */
+.app{display:flex;position:relative;height:100%;width:100%}
+.main{flex:1;min-width:0;height:100%;display:flex;flex-direction:column}
+
+/* ---------- Sidebar (drawer on phone, column on desktop) ---------- */
+.sidebar{
+  position:fixed;top:0;bottom:0;left:0;
+  width:min(84vw,290px);
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  padding:14px 12px 12px;
+  transform:translateX(-102%);
+  visibility:hidden;
+  transition:transform .28s var(--ease),visibility .28s;
+  z-index:20;
+}
+.sidebar.open{transform:none;visibility:visible}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .28s;z-index:15}
+.scrim.show{opacity:1;pointer-events:auto}
+@media (min-width:900px){
+  .sidebar{position:relative;top:auto;bottom:auto;left:auto;transform:none;visibility:visible;width:280px;flex:0 0 280px}
+  .scrim{display:none}
+  .m-only{display:none!important}
+}
+
+.side-head{display:flex;align-items:center;gap:10px;padding:2px 4px 14px}
+.side-title{font-weight:800;font-size:17px;letter-spacing:.2px}
+.spacer{flex:1}
+.new-chat{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:11px 14px;border-radius:14px;border:1px solid transparent;
+  background:linear-gradient(var(--panel-2),var(--panel-2)) padding-box,var(--grad) border-box;
+  font-weight:650;font-size:15px;transition:transform .2s var(--ease),box-shadow .2s;
+}
+.new-chat:hover{box-shadow:0 0 18px rgba(139,92,246,.3)}
+.new-chat:active{transform:scale(.98)}
+.side-label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:20px 6px 8px}
+.history{list-style:none;margin:0;padding:0;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.hist-item{display:flex;align-items:center;gap:2px;border-radius:12px;transition:background .2s}
+.hist-item:hover{background:var(--panel-2)}
+.hist-item.active{background:var(--panel-2);box-shadow:inset 3px 0 0 var(--cyan)}
+.hist-open{
+  flex:1;min-width:0;text-align:left;background:none;border:0;padding:10px 10px;
+  border-radius:12px;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hist-del{
+  flex:0 0 auto;width:30px;height:30px;border:0;background:none;color:var(--muted);
+  border-radius:8px;font-size:18px;line-height:1;
+}
+.hist-del:hover{color:#f87171;background:rgba(248,113,113,.1)}
+.empty-hist{color:var(--muted);font-size:13px;padding:8px 6px}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-bottom:1px solid var(--line);
+  background:rgba(11,11,20,.75);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand-text{min-width:0}
+.brand h1{
+  margin:0;font-size:18px;line-height:1.15;font-weight:800;letter-spacing:.2px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.tagline{margin:1px 0 0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{
+  flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel-2);display:grid;place-items:center;color:var(--text);
+  transition:transform .2s var(--ease),background .2s;
+}
+.icon-btn:hover{background:#21213a}
+.icon-btn:active{transform:scale(.95)}
+.icon-btn svg{width:20px;height:20px}
+
+/* ---------- Logo: the real Zoxora knot mark on a dark rounded tile ---------- */
+.logo{
+  flex:0 0 auto;width:36px;height:36px;border-radius:11px;background:#04081a;overflow:hidden;
+  display:grid;place-items:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 0 16px rgba(139,92,246,.55),0 0 30px rgba(34,211,238,.22);
+}
+.logo img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.logo.sm{width:26px;height:26px;border-radius:8px}
+.logo.xl{width:76px;height:76px;border-radius:24px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 0 28px rgba(139,92,246,.6),0 0 60px rgba(34,211,238,.28)}
+
+/* ---------- Chat area ---------- */
+.chat{
+  flex:1;min-height:0;display:flex;flex-direction:column;
+  overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:18px 14px 12px;
+}
+.welcome{
+  margin:auto;max-width:560px;width:100%;
+  display:flex;flex-direction:column;align-items:center;text-align:center;padding:8px 0;
+}
+.welcome h2{margin:20px 0 6px;font-size:clamp(22px,5.5vw,28px);font-weight:750;letter-spacing:-.2px}
+.welcome p{margin:0 0 22px;color:var(--muted);font-size:15px;line-height:1.5}
+.welcome .mode-label{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+.welcome .mode-label.more{margin-top:18px}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.chip{
+  padding:10px 16px;border-radius:999px;font-size:14px;border:1px solid transparent;
+  background:linear-gradient(var(--panel-2),var(--panel-2)) padding-box,var(--grad) border-box;
+  transition:transform .2s var(--ease),box-shadow .2s;
+}
+.chip:hover{box-shadow:0 0 18px rgba(34,211,238,.25)}
+.chip:active{transform:scale(.97)}
+.chip.mode{font-weight:650}
+
+.thread{
+  flex:0 0 auto;width:100%;max-width:780px;margin:0 auto;
+  display:flex;flex-direction:column;gap:14px;
+}
+.msg{display:flex;align-items:flex-end;gap:10px;animation:rise .28s var(--ease)}
+.msg.user{justify-content:flex-end}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bubble{
+  max-width:min(86%,640px);min-width:0;padding:11px 15px;border-radius:18px;
+  font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.msg.user .bubble{
+  background:linear-gradient(135deg,#7c3aed 0%,#0891b2 100%);color:#fff;
+  border-bottom-right-radius:6px;box-shadow:0 6px 20px rgba(124,58,237,.25);
+}
+.msg.bot .bubble{
+  background:var(--panel-2);border:1px solid var(--line);border-bottom-left-radius:6px;
+}
+.bubble.md{white-space:normal}
+.md p{margin:0 0 8px}
+.md p:last-child,.md ul:last-child,.md ol:last-child,.md .codeblock:last-child{margin-bottom:0}
+.md ul,.md ol{margin:0 0 8px;padding-left:20px}
+.md li{margin:2px 0}
+.md strong{font-weight:750;color:#fff}
+.md code.inline{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:6px}
+.codeblock{margin:6px 0 2px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#07070f;max-width:100%}
+.codebar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 6px 5px 12px;background:rgba(255,255,255,.04);border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.copy-btn{border:1px solid var(--line);background:var(--panel-2);color:var(--text);border-radius:8px;padding:4px 10px;font-size:12px}
+.copy-btn:active{transform:scale(.96)}
+.codeblock pre{margin:0;padding:10px 12px;overflow-x:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.5;white-space:pre}
+.codeblock code{font-family:inherit;color:#d6d3ff}
+.caret::after{
+  content:"";display:inline-block;width:2px;height:1em;margin-left:3px;vertical-align:-2px;
+  background:var(--cyan);animation:blink 1s steps(2,start) infinite;
+}
+@keyframes blink{to{visibility:hidden}}
+.typing{display:inline-flex;gap:5px;padding:5px 2px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bounce 1.1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}
+.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
+
+/* ---------- Composer + footer ---------- */
+.dock{flex:0 0 auto;padding:8px 12px calc(6px + env(safe-area-inset-bottom,0px))}
+.composer{
+  width:100%;max-width:780px;margin:0 auto;display:flex;align-items:flex-end;gap:8px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:24px;
+  padding:6px 6px 6px 16px;transition:border-color .2s,box-shadow .2s;
+}
+.composer:focus-within{border-color:rgba(34,211,238,.55);box-shadow:0 0 0 4px rgba(34,211,238,.1)}
+#input{
+  flex:1;min-width:0;resize:none;border:0;outline:0;background:transparent;
+  font-size:16px;line-height:1.4;padding:9px 0;max-height:160px;color:var(--text);
+}
+#input::placeholder{color:#7a7a98}
+.send{
+  flex:0 0 auto;width:42px;height:42px;border-radius:50%;border:0;background:var(--grad);
+  display:grid;place-items:center;color:#fff;box-shadow:0 0 16px rgba(139,92,246,.45);
+  transition:opacity .2s,transform .2s,box-shadow .2s;
+}
+.send:disabled{opacity:.35;box-shadow:none;cursor:default}
+.send:not(:disabled):active{transform:scale(.93)}
+.send svg{width:18px;height:18px}
+.foot{margin:8px 0 0;text-align:center;font-size:12px;color:var(--muted)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="Chat history">
+    <div class="side-head">
+      <span class="logo sm" data-logo aria-hidden="true"></span>
+      <strong class="side-title">Zoxora</strong>
+      <span class="spacer"></span>
+      <button class="icon-btn m-only" id="closeSide" type="button" aria-label="Sidebar band karo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <button class="new-chat" id="newChatSide" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      New chat
+    </button>
+    <div class="side-label">Purani chats</div>
+    <ul class="history" id="history"></ul>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn m-only" id="menuBtn" type="button" aria-label="Chat history kholo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div class="brand">
+        <span class="logo" data-logo aria-hidden="true"></span>
+        <div class="brand-text">
+          <h1>Zoxora</h1>
+          <p class="tagline">Your AI companion</p>
+        </div>
+      </div>
+      <span class="spacer"></span>
+      <button class="icon-btn m-only" id="topNew" type="button" aria-label="New chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </header>
+
+    <section class="chat" id="chat" aria-label="Chat">
+      <div class="welcome" id="welcome">
+        <span class="logo xl" data-logo aria-hidden="true"></span>
+        <h2>Namaste! Aaj kya karein?</h2>
+        <p>Mode chuno ya seedha apna sawal neeche likho.</p>
+        <div class="mode-label">Mode chuno</div>
+        <div class="chips" id="modes">
+          <button class="chip mode" type="button" data-prompt="Interview practice karni hai">Interview</button>
+          <button class="chip mode" type="button" data-prompt="Study help chahiye">Study</button>
+          <button class="chip mode" type="button" data-prompt="Kuch likhne me help karo">Write</button>
+          <button class="chip mode" type="button" data-prompt="Code help chahiye">Code</button>
+        </div>
+        <div class="mode-label more">Ya ye try karo</div>
+        <div class="chips" id="chips">
+          <button class="chip" type="button" data-prompt="Mujhe game idea do">Game idea</button>
+          <button class="chip" type="button" data-prompt="Ek poem likho">Ek poem</button>
+          <button class="chip" type="button" data-prompt="Mera din plan karo">Din ka plan</button>
+        </div>
+      </div>
+      <div class="thread" id="thread"></div>
+    </section>
+
+    <div class="dock">
+      <form class="composer" id="composer" autocomplete="off">
+        <label class="sr-only" for="input">Message likho</label>
+        <textarea id="input" rows="1" maxlength="2000" placeholder="Kuch bhi poocho..."></textarea>
+        <button class="send" id="sendBtn" type="submit" disabled aria-label="Message bhejo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+      <footer class="foot">Zoxora - AI se galti ho sakti hai, zaroori baat check kar lena<br>Founder: Anmol Rajput</footer>
+    </div>
+  </main>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   REPLY LAYER
+   getReply(text) is the only place that decides the answer.
+   1. If REAL_AI_ENDPOINT is set, it is tried first (the server function api/chat.js).
+   2. If that fails or is empty, the local rule engine answers, with a short notice.
+   The local engine is a set of fixed rules with a little memory.
+   It does not know everything and does not claim to.
+   ===================================================================== */
+
+// Server function that talks to the AI. Keys live only in Vercel environment variables.
+const REAL_AI_ENDPOINT = '/api/chat';
+const HISTORY_TURNS = 12;
+
+const FALLBACK_ERROR = 'Abhi kuch gadbad ho gayi. Thodi der baad phir try karo.';
+const AI_DOWN_NOTICE = 'AI abhi connect nahi ho pa raha, isliye basic mode se jawab de raha hoon.\n\n';
+
+// history = chat.messages (already includes the newest user message)
+function buildApiMessages(history, text) {
+  const list = Array.isArray(history) ? history : [];
+  const msgs = list
+    .filter(m => m && typeof m.text === 'string' && m.text.trim() && (m.role === 'user' || m.role === 'bot'))
+    .map(m => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.text.slice(0, 2000) }));
+  if (!msgs.length || msgs[msgs.length - 1].role !== 'user') msgs.push({ role: 'user', content: String(text).slice(0, 2000) });
+  let recent = msgs.slice(-HISTORY_TURNS);
+  while (recent.length > 1 && recent[0].role !== 'user') recent = recent.slice(1);
+  return recent;
+}
+
+async function getReply(text, history) {
+  if (REAL_AI_ENDPOINT) {
+    const notice = AI_DOWN_NOTICE;
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 35000);
+      let res;
+      try {
+        res = await fetch(REAL_AI_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: buildApiMessages(history, text) }),
+          signal: ctrl.signal
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data.reply === 'string' && data.reply.trim()) return data.reply;
+      } else if (res.status === 429) {
+        // Too many messages: just ask the user to wait, no local answer.
+        return 'Bahut jaldi jaldi messages ho gaye. Thodi der ruko aur phir bhejo.';
+      }
+    } catch (err) {
+      /* endpoint down: fall back to the local engine below */
+    }
+    return notice + localReply(text);
+  }
+  return localReply(text);
+}
+
+/* ---------- Helpers ---------- */
+
+function pickOne(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function normalizeText(s) {
+  return String(s)
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function rotate(st, key, list) {
+  st.idx = st.idx || {};
+  const i = st.idx[key] || 0;
+  st.idx[key] = i + 1;
+  return list[i % list.length];
+}
+
+const EN_WORDS = /\b(what|how|who|hello|hi|please|can|tell|explain|the|is|are|my|name|time|date|give|write|make|help|thanks|you|your|i|do|of|for|joke|poem)\b/;
+const HI_WORDS = /\b(hai|hain|kya|kaise|mujhe|mujhko|tum|aap|batao|ka|ki|ke|nahi|hoon|karo|do|likho|ek|mera|mere|kaun|kab|kitne|bolo|sunao|chahiye|me|mein|se|ho|karni|karna|sunao)\b/;
+function looksEnglish(t) {
+  return EN_WORDS.test(t) && !HI_WORDS.test(t);
+}
+
+const NAME_STOP = new Set(['kya','kaun','theek','thik','bore','good','sad','happy','tired','busy','ready','student','developer','bhukha','bhookha','free','fine','ok','okay','here','yahan','ghar','hungry','bored','confused','khush','udaas','thaka','thak','new','naya','name','nahi','hu','hoon','the','a','batao','bolo','bata','pata','kaun','hai','hain','h','kaisa','busy','pareshan','sahi','done','sick','bimar','akela','lonely','sleepy','angry','dukhi','tension','excited','thoda','bahut','bohot','very','so','not']);
+
+function extractName(raw) {
+  const patterns = [
+    /\b(?:mera naam|mere naam|mera name|my name is)\s+([\p{L}]{2,20})/iu,
+    /\bmujhe\s+([\p{L}]{2,20})\s+(?:kehte|bulate|bulaate|kahte)\b/iu,
+    /^\s*(?:main|mai|i am|i'm)\s+([\p{L}]{2,20})\s+(?:hoon|hun|hu)\s*$/iu
+  ];
+  for (const p of patterns) {
+    const m = String(raw).match(p);
+    if (m && !NAME_STOP.has(m[1].toLowerCase())) {
+      return m[1].charAt(0).toUpperCase() + m[1].slice(1);
+    }
+  }
+  return null;
+}
+
+function fmtNum(v) {
+  return String(Math.round(v * 1e6) / 1e6);
+}
+
+/* ---------- Safe math: tokenizer + small parser, no eval ---------- */
+
+function evalMath(src) {
+  const tokens = src.match(/\d+(?:\.\d+)?|[+\-*/^()]/g);
+  if (!tokens || tokens.join('').length !== src.replace(/\s+/g, '').length) return null;
+  let pos = 0;
+  const peek = () => tokens[pos];
+  const next = () => tokens[pos++];
+  function parseExpr() {
+    let v = parseTerm();
+    while (peek() === '+' || peek() === '-') {
+      const op = next();
+      const r = parseTerm();
+      v = op === '+' ? v + r : v - r;
+    }
+    return v;
+  }
+  function parseTerm() {
+    let v = parseFactor();
+    while (peek() === '*' || peek() === '/') {
+      const op = next();
+      const r = parseFactor();
+      if (op === '/' && r === 0) throw new Error('zero');
+      v = op === '*' ? v * r : v / r;
+    }
+    return v;
+  }
+  function parseFactor() {
+    const b = parseUnary();
+    if (peek() === '^') {
+      next();
+      return Math.pow(b, parseFactor());
+    }
+    return b;
+  }
+  function parseUnary() {
+    if (peek() === '-') { next(); return -parseUnary(); }
+    if (peek() === '+') { next(); return parseUnary(); }
+    return parseAtom();
+  }
+  function parseAtom() {
+    const tk = next();
+    if (tk === '(') {
+      const v = parseExpr();
+      if (next() !== ')') throw new Error('paren');
+      return v;
+    }
+    if (tk === undefined || !/^[\d.]/.test(tk)) throw new Error('token');
+    return parseFloat(tk);
+  }
+  try {
+    const v = parseExpr();
+    if (pos !== tokens.length) return null;
+    return isFinite(v) ? v : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function mathReply(raw, say) {
+  let s = String(raw).toLowerCase();
+  // Percentages: "20% of 500", "500 ka 20 percent"
+  let m = s.match(/(\d+(?:\.\d+)?)\s*(?:%|percent|pratishat)\s*(?:of|ka|ki|ke)\s*(\d+(?:\.\d+)?)/);
+  if (m) {
+    const r = (parseFloat(m[1]) / 100) * parseFloat(m[2]);
+    return say(m[1] + '% of ' + m[2] + ' = ' + fmtNum(r), m[1] + '% of ' + m[2] + ' = ' + fmtNum(r));
+  }
+  m = s.match(/(\d+(?:\.\d+)?)\s*(?:ka|ki|ke|of)\s*(\d+(?:\.\d+)?)\s*(?:%|percent|pratishat)/);
+  if (m) {
+    const r = (parseFloat(m[2]) / 100) * parseFloat(m[1]);
+    return say(m[2] + '% of ' + m[1] + ' = ' + fmtNum(r), m[2] + '% of ' + m[1] + ' = ' + fmtNum(r));
+  }
+  // Plain expressions
+  s = s
+    .replace(/(\d)\s*[x×]\s*(\d)/g, '$1*$2')
+    .replace(/÷/g, '/')
+    .replace(/\bplus\b|\bjodo\b/g, '+')
+    .replace(/\bminus\b/g, '-')
+    .replace(/\b(into|guna|multiply|times)\b/g, '*')
+    .replace(/\b(divided by|bhag)\b/g, '/');
+  const expr = s
+    .replace(/^\s*(calculate|calc|solve|what is|what s|whats|result|kitna hota hai|kitna hai|kya hai|kya hoga|kitna)\s*/, '')
+    .replace(/\s*(kitna hota hai|kitna hai|kya hai|hai|kitna|=|\?)\s*$/, '')
+    .trim();
+  if (/\d/.test(expr) && /[+\-*/^]/.test(expr) && /^[\d\s+\-*/^().]+$/.test(expr)) {
+    if (/\/\s*0(?![\d.])/.test(expr)) return say('Zero se divide nahi hota.', 'You cannot divide by zero.');
+    const v = evalMath(expr);
+    if (v === null) return say('Ye expression samajh nahi aaya. Numbers aur + - * / ( ) hi use karo.', "I could not read that expression. Use numbers and + - * / ( ) only.");
+    return expr + ' = ' + fmtNum(v);
+  }
+  return null;
+}
+
+/* ---------- Content ---------- */
+
+const GAME_IDEAS = [
+  'Ek idea: "Chai Chor". Player ek chhoti chai ki dukaan chalata hai. Customers ka order time pe dena hai, sahi order pe coins milte hain, aur level badhne par bheed tez ho jaati hai.',
+  'Ek idea: "Shabd Sitara". Har round me 7 akshar aate hain, aur 60 second me jitne ho sake utne shabd banane hain. Lamba shabd, zyada points.',
+  'Ek idea: "Chhat Ki Duniya". Ek billi chhaton par kood kar machhli collect karti hai. Har level me gravity ulti ho jaati hai, aur puzzle naya ban jaata hai.',
+  'Ek idea: "Raat ki Dukaan". Tum ek chhoti dukaan raat 10 baje se 2 baje tak chalate ho. Stock khatam hone se pehle sahi cheezein order karo.'
+];
+
+const POEMS = [
+  'Khidki khuli, subah aayi,\nChai ki khushboo sang laayi.\nDil ne phir himmat ki,\nAaj kuch naya hoga, ye aas jagaayi.',
+  'Raat ne thaka diya tha,\nSubah ne haath thaama,\nChhoti si ummeed lekar,\nZindagi phir chal padi.',
+  'Shaam ki chai, dheemi awaaz,\nDin bhar ki thakaan ka ho gaya ilaaj.\nKal ki fikr kal pe chhod do,\nAaj bas khud se thoda sa pyaar karo.'
+];
+
+const JOKES = [
+  'Ek chhota joke: Programmer ne chai peeni chhodi. Bola, "Isme bug hai." Pata chala chai me sugar zyada thi.',
+  'Ek aur: Chai aur code me farak hai. Chai thandi ho jaaye to bekaar lagti hai, code thanda ho jaaye to bug lagta hai.',
+  'Teacher: Duniya ki sabse tez cheez kya hai? Student: Mere ghar ka WiFi jab exam ka time ho.',
+  'Doctor: Aapko roz 10 km chalna chahiye. Patient: Theek hai, par pehle ye bataiye, gaadi kis liye hai?'
+];
+
+const JOKES_EN = [
+  'Why do programmers prefer dark mode? Because light attracts bugs.',
+  'Why did the developer go broke? Because he used up all his cache.'
+];
+
+const MOTIVATION = [
+  'Ek step aaj lo. Poora raasta baad me dikhega.',
+  'Thoda thak gaye ho to rest lo, par chhodo mat. Chhota kaam bhi aage le jaata hai.',
+  'Jo aaj mushkil lag raha hai, wo kuch hafton me aadat ban sakta hai. Bas aaj ka 10 minute shuru karo.',
+  'Tum pehle hi itna kar chuke ho jitna tum sochte bhi nahi. Ab ek chhota kaam chuno aur shuru karo.'
+];
+
+const MOTIVATION_EN = [
+  'Take one small step today. The rest of the path becomes clear as you walk it.',
+  'If you are tired, rest. But do not quit. Small progress still counts.'
+];
+
+const DAY_PLAN = 'Ek simple din ka plan:\n\n- Subah 7-8: uthna, paani peena, 10 min stretching\n- 9-12: sabse important kaam\n- 1-2: lunch aur chhota break\n- 2-5: baaki kaam ya padhai\n- Shaam: 20 min ki walk\n- Raat 10 baje: phone side me, aur kal ke 3 kaam likh lo\n\nBatao tumhara kaam kya hai, to isse aur set karte hain.';
+
+const STUDY_PLAN = '2 ghante ka study plan:\n\n1. 0:00-0:40: pichhla topic revise karo\n2. 0:40-1:10: naya topic padho\n3. 1:10-1:25: break\n4. 1:25-1:50: 5-10 practice questions\n5. 1:50-2:00: 3-4 points me notes likho\n\nExam kab hai aur roz kitne ghante de sakte ho? Batao to plan set karta hoon.';
+
+const WORKOUT_PLAN = 'Beginner workout (hafte me 3 din):\n\n- Din 1: 5-10 min warm-up, 3 x 10 squats, 3 x 8 wall push-ups, 30 sec plank\n- Din 2: 20-30 min brisk walk ya cycling\n- Din 3: Din 1 jaisa, reps dheere-dheere badhao\n\nAgar koi health problem hai ya chot lagi hai, to pehle doctor se poochna.';
+
+const INTERVIEW_QS = [
+  'Apne baare me 1 minute me batao.',
+  'Tumhari sabse badi strength kya hai? Ek example ke saath batao.',
+  'Koi mushkil situation batao jo tumne handle ki ho.',
+  'Agle 2 saal me tum khud ko kahan dekhte ho?',
+  'Hum tumhe hire kyun karein?'
+];
+
+const TOPICS = [
+  {
+    re: /photosynth|prakash sanshleshan/,
+    hi: 'Photosynthesis: paudhe sunlight, paani aur CO2 se apna khana (glucose) banate hain, aur oxygen chhodte hain. Ye patton me chlorophyll ki madad se hota hai.',
+    more: 'Simple equation: CO2 + paani + sunlight se glucose + oxygen. Ye roshni me hota hai.',
+    en: 'Photosynthesis: plants use sunlight, water and CO2 to make glucose and release oxygen. It happens in leaves with chlorophyll.',
+    enMore: 'Simple equation: CO2 + water + sunlight gives glucose + oxygen. It needs light.'
+  },
+  {
+    re: /gravity|gurutva|gurutvakarshan/,
+    hi: 'Gravity wo force hai jo cheezon ko ek-dusre ki taraf kheechti hai. Dharti hume neeche kheechti hai, isliye cheezein girti hain.',
+    more: 'Newton ne isko samjhaya. Zyada mass wali cheez zyada gravity deti hai, aur doori badhne par ye kam hoti hai.',
+    en: 'Gravity is the force that pulls objects toward each other. Earth pulls us down, so things fall.',
+    enMore: 'Newton described it. Bigger mass pulls harder, and the pull gets weaker with distance.'
+  },
+  {
+    re: /pythagor/,
+    hi: 'Pythagoras theorem: right-angle triangle me a² + b² = c². c sabse lamba side hai (hypotenuse). Example: a=3, b=4 to c=5.',
+    more: 'Ye tab use hota hai jab right triangle ke do side pata ho aur teesra side nikalna ho.',
+    en: 'Pythagoras theorem: in a right-angle triangle, a² + b² = c², where c is the longest side (hypotenuse). Example: a=3, b=4 gives c=5.',
+    enMore: 'Use it when two sides of a right triangle are known and you need the third.'
+  },
+  {
+    re: /water cycle|jal chakra|jal chakr/,
+    hi: 'Water cycle: sooraj ki garmi se paani bhaap banta hai, bhaap thandi hokar baadal banta hai, aur baarish ya barf ke roop me wapas girta hai.',
+    more: 'Steps: evaporation (bhaap banna), condensation (baadal banna), precipitation (girna), collection (jama hona).',
+    en: 'Water cycle: the sun heats water, it turns to vapour, cools into clouds, and falls back as rain or snow.',
+    enMore: 'Steps: evaporation, condensation, precipitation, collection.'
+  },
+  {
+    re: /mitochondri|power house/,
+    hi: 'Mitochondria cell ka power house hai. Yahan food ki energy se ATP banti hai, jo cell ke kaam ke liye energy hai.',
+    more: 'Ye cell ke andar energy production ka main centre hai.',
+    en: 'Mitochondria are the power house of the cell. They make ATP, the energy the cell uses.',
+    enMore: 'They are the main centre of energy production inside most cells.'
+  }
+];
+
+const PHRASES = [
+  ['dhanyavad', 'Thank you'],
+  ['shukriya', 'Thank you'],
+  ['kaise ho', 'How are you?'],
+  ['main theek hoon', 'I am fine'],
+  ['mujhe paani chahiye', 'I need water'],
+  ['mujhe madad chahiye', 'I need help'],
+  ['tum kahan ho', 'Where are you?'],
+  ['aap kahan ho', 'Where are you?'],
+  ['kal milte hain', 'See you tomorrow'],
+  ['main ghar par hoon', 'I am at home'],
+  ['subah ki shubhkamnayein', 'Good morning']
+];
+
+const STOP = new Set(['hai','hain','ka','ki','ke','ko','se','me','mein','aur','the','is','a','an','to','of','ye','yeh','wo','woh','vo','we','ek','par','main','tum','hum','was','for','in','on','it','that','and','or','with','are','be','this']);
+
+function summarizeText(body) {
+  const text = String(body).replace(/\s+/g, ' ').trim();
+  const sents = text.replace(/([.!?।])\s+/g, '$1\n').split('\n').map(s => s.trim()).filter(s => s.length > 12);
+  if (!sents.length) return 'Text paste karo, main important lines chun kar short summary dunga.';
+  if (sents.length < 3) return 'Summary: ' + sents.join(' ');
+  const freq = {};
+  for (const w of normalizeText(text).split(' ')) {
+    if (w.length > 2 && !STOP.has(w)) freq[w] = (freq[w] || 0) + 1;
+  }
+  const scored = sents.map((s, i) => {
+    const ws = normalizeText(s).split(' ').filter(w => w.length > 2 && !STOP.has(w));
+    const total = ws.reduce((a, w) => a + (freq[w] || 0), 0);
+    return { i, s, score: total / Math.sqrt(ws.length || 1) };
+  });
+  const k = sents.length > 8 ? 3 : 2;
+  const pick = scored.slice().sort((a, b) => b.score - a.score).slice(0, k).sort((a, b) => a.i - b.i);
+  return 'Short summary:\n' + pick.map(p => '- ' + p.s).join('\n') +
+    '\n\nYe text ki main lines chun kar bana hai, naya content nahi jodta.';
+}
+
+const IDENTITY_HI = 'Main Zoxora hoon, ek chat companion. Main ek local helper hoon jo fixed rules aur is chat ki memory se jawab deta hai. Main bada AI nahi hoon, mere jawab sahi ya poore hone ki guarantee nahi dete. Asli AI baad me ek line me jud sakta hai.';
+const IDENTITY_EN = 'I am Zoxora, a chat companion. I am a local helper that answers from fixed rules and this chat\'s memory. I am not a large AI model, and my answers are not guaranteed to be complete or correct. A real AI connection can be added later.';
+
+const CAPABILITIES_HI = 'Main ye kar sakta hoon:\n- Interview practice: ek-ek sawal, chhote feedback ke saath\n- Study topics ki simple explanation\n- Chhote code snippets (HTML button, Python loop)\n- Email, bio, caption, Instagram caption aur hashtags ke draft\n- Safe math aur percentage\n- Aaj ki date aur time (is device ke hisaab se)\n- Jokes, motivation, game ya poem ideas\n- Chhote translations aur lambe text ka short summary\n- Simple plans: study, workout, din ka routine\n\nLive news, weather ya price mere paas nahi hai.';
+const CAPABILITIES_EN = 'I can help with: interview practice (one question at a time), simple study explanations, small code snippets, drafts for email, bio, captions and hashtags, safe math and percentages, the date and time on this device, jokes, motivation, ideas, short translations, short summaries of pasted text, and simple study, workout or day plans. I do not have live news, weather or prices.';
+
+const CAPTIONS_HI = [
+  'Chai, dost aur ek lamba din. Aaj ka mood yahi hai.',
+  'Kuch plan nahi tha, phir bhi din achha ho gaya.',
+  'Chhoti cheezein, badi khushi.'
+];
+
+const FB_HI = [
+  'Ye mere fixed rules ke bahar hai, isliye pakka jawab nahi de sakta. Ek line me batao: ye study, code, likhne, plan ya kisi aur cheez ke baare me hai?',
+  'Mujhe clearly samajh nahi aaya. Thoda aur detail do, jaise kis subject, kis kaam ya kis cheez ke liye.'
+];
+const FB_EN = [
+  'That is outside my fixed rules, so I cannot give a sure answer. In one line, is it about study, code, writing, a plan or something else?',
+  'I did not get that clearly. Give me a bit more detail, like the subject, the task or what it is for.'
+];
+
+/* ---------- Replier table: used for "aur batao", "phir se" follow-ups ---------- */
+
+const REPLIERS = {
+  text: (st, arg, en, more) => (more
+    ? (en ? 'Which part do you want more detail on? Tell me and I will explain that part.' : 'Kis part ke baare me aur detail chahiye? Bolo, main wahi batata hoon.')
+    : arg),
+  game: st => rotate(st, 'game', GAME_IDEAS),
+  poem: st => rotate(st, 'poem', POEMS),
+  joke: (st, arg, en) => rotate(st, en ? 'jokeEn' : 'joke', en ? JOKES_EN : JOKES),
+  motivation: (st, arg, en) => rotate(st, en ? 'motEn' : 'mot', en ? MOTIVATION_EN : MOTIVATION),
+  study: (st, idx, en, more) => {
+    const topic = TOPICS[idx];
+    if (!topic) return 'Topic mil nahi raha. Dobara naam likho.';
+    if (en) return more ? topic.enMore : topic.en;
+    return more ? topic.more : topic.hi;
+  },
+  day: () => DAY_PLAN,
+  studyplan: () => STUDY_PLAN,
+  workout: () => WORKOUT_PLAN
+};
+
+function run(st, key, arg, en, more) {
+  st.last = { key, arg: arg === undefined ? null : arg, en: !!en };
+  return REPLIERS[key](st, arg, !!en, !!more);
+}
+
+function runLast(st, more) {
+  const L = st.last;
+  return REPLIERS[L.key](st, L.arg, L.en, more);
+}
+
+function lastBotText(chat) {
+  if (!chat) return '';
+  for (let i = chat.messages.length - 1; i >= 0; i--) {
+    if (chat.messages[i].role === 'bot') return chat.messages[i].text;
+  }
+  return '';
+}
+
+function shortenLast(chat, en) {
+  const base = lastBotText(chat).split('```')[0].trim();
+  const lines = base.split('\n').map(x => x.trim()).filter(Boolean);
+  if (lines.length > 2) {
+    return 'Short version:\n' + lines.slice(0, 3).join('\n').slice(0, 260);
+  }
+  const parts = base.replace(/([.!?])\s+/g, '$1\n').split('\n').filter(Boolean);
+  return 'Short version: ' + parts.slice(0, 2).join(' ').slice(0, 220);
+}
+
+const INTERVIEW_FEEDBACK_HI = [
+  'Jawab chhota tha. Ek example aur result jodo, tab baat zyada clear lagegi.',
+  'Achha jawab. Next time ek specific example ke saath bolo.',
+  'Achha, numbers ya result jodne se jawab strong lagta hai.'
+];
+
+function feedbackFor(t) {
+  const words = t.split(' ').length;
+  if (words < 6) return INTERVIEW_FEEDBACK_HI[0];
+  if (words > 80) return 'Jawab lamba ho gaya. Main point pehle bolo, phir 2 chhote example.';
+  if (/\d/.test(t)) return INTERVIEW_FEEDBACK_HI[2];
+  return INTERVIEW_FEEDBACK_HI[1];
+}
+
+function interviewTurn(t, st, en) {
+  const skip = /^(next|agla|agla sawal|skip)$/.test(t);
+  const lead = skip ? (en ? 'Okay, next question.' : 'Theek hai, agla sawal.') : feedbackFor(t);
+  st.qi = (st.qi || 0) + 1;
+  if (st.qi >= INTERVIEW_QS.length) {
+    st.mode = null;
+    return lead + '\n\n' + (en ? 'That was the last question. Type "interview" to start again.' : 'Practice khatam. Phir se chahiye to "interview" likho.');
+  }
+  return lead + '\n\n' + (en ? 'Next question: ' : 'Agla sawal: ') + INTERVIEW_QS[st.qi];
+}
+
+function topicIndexFor(t) {
+  for (let i = 0; i < TOPICS.length; i++) {
+    if (TOPICS[i].re.test(t)) return i;
+  }
+  return -1;
+}
+
+function localReply(raw) {
+  const chat = getCurrentChat();
+  const st = chat ? (chat.state || (chat.state = {})) : {};
+  const t = normalizeText(raw);
+  const en = looksEnglish(t);
+  const say = (hi, eng) => (en ? eng : hi);
+  const hit = re => re.test(t);
+  const who = profile.name || '';
+
+  if (!t) return say('Kuch likho, main jawab doon.', 'Type something and I will reply.');
+
+  // Interview practice is a mode: answers go to feedback until "stop".
+  if (st.mode === 'interview') {
+    if (hit(/^(stop|band karo|bas|rok do|exit|quit|band)$/)) {
+      st.mode = null;
+      return say('Interview practice band. Jab mann ho, "interview" likh kar phir start karo.', 'Interview practice stopped. Type "interview" to start again.');
+    }
+    if (hit(/^(phir se|fir se|dobara|repeat|sawal dobara|question dobara)$/)) {
+      return say('Ye sawal dobara: ' + INTERVIEW_QS[st.qi || 0], 'The question again: ' + INTERVIEW_QS[st.qi || 0]);
+    }
+    // Short commands (joke, date, weather, code...) leave the interview and get a normal reply.
+    const shortCmd = t.split(' ').length <= 6 && (
+      hit(/\b(joke|date|tareekh|tarikh|time|samay|baje|weather|mausam|poem|kavita|code|python|html|email|translate|anuvad|summary|motivat|plan|kaun ho|kya kar sakte|naam|hello|namaste|hii+|hi)\b/) ||
+      (/\d/.test(t) && /[+*\/%]/.test(t)) ||
+      hit(/^(aur batao|aur|more|tell me more)$/)
+    );
+    if (!shortCmd) return interviewTurn(t, st, en);
+    st.mode = null;
+  }
+
+  // Follow-ups on the previous answer.
+  if (st.last && hit(/^(aur batao|aur bata|aur bolo|aur samjhao|aur detail|detail me|aur|more|tell me more|more details|continue)$/)) {
+    return runLast(st, true);
+  }
+  if (st.last && hit(/\b(phir se|fir se|dobara|ek aur|aur ek|once more|another one)\b/)) {
+    return runLast(st, false);
+  }
+  if (lastBotText(chat) && t.split(' ').length <= 6 && hit(/\b(short me|short karo|chhota karo|chhoti karo|brief me|shorter|make it short)\b/)) {
+    return shortenLast(chat, en);
+  }
+
+  // Name memory.
+  if (hit(/\b(naam bhool jao|naam hata do|forget my name|mera naam bhool)\b/)) {
+    profile.name = null;
+    saveProfile();
+    return say('Theek hai, naam hata diya.', 'Okay, I removed your name.');
+  }
+  const newName = extractName(raw);
+  if (newName) {
+    profile.name = newName;
+    saveProfile();
+    return say(newName + ', achha! Yaad rakh liya. Ye naam is browser me save rahega.', 'Nice to meet you, ' + newName + '! I saved your name in this browser.');
+  }
+  if (hit(/\b(mera naam|mere naam|my name|mera name)\b.*\b(kya|batao|pata|what|kaun)\b/) || hit(/^(what is my name|whats my name)$/)) {
+    return who
+      ? say('Tumhara naam ' + who + ' hai.', 'Your name is ' + who + '.')
+      : say('Abhi mujhe tumhara naam nahi pata. Bata do, main is browser me yaad rakh lunga.', 'I do not know your name yet. Tell me and I will remember it in this browser.');
+  }
+
+  // Safe math.
+  const math = mathReply(raw, say);
+  if (math) return math;
+
+  // Date and time from this device.
+  if (hit(/\b(time|samay|kitne baje|baje|date|tareekh|tarikh|kya din|din kya|weekday|aaj ka din)\b/)) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const wantsDate = hit(/\b(date|tareekh|tarikh|kya din|din kya|weekday|aaj ka din)\b/);
+    const wantsTime = hit(/\b(time|samay|baje|baj)\b/);
+    if (wantsDate && !wantsTime) return say('Aaj ' + dateStr + ' hai (is device ke hisaab se).', 'Today is ' + dateStr + ' (based on this device).');
+    if (wantsDate && wantsTime) return say('Abhi ' + timeStr + ' hua hai, aaj ' + dateStr + ' hai. Ye device ke hisaab se hai.', 'It is ' + timeStr + ' and today is ' + dateStr + ', based on this device.');
+    return say('Abhi ' + timeStr + ' baje hain (is device ke hisaab se).', 'It is ' + timeStr + ' on this device.');
+  }
+
+  // Identity and capabilities.
+  if (hit(/\b(kaun ho|tum kaun|aap kaun|tum kya ho|aap kya ho|who are you|what are you|tumhara naam|aapka naam|tera naam)\b/)) {
+    return say(IDENTITY_HI, IDENTITY_EN);
+  }
+  if (hit(/\b(kya kar sakte|kya kar sakti|kya karte|kya kya kar|help kar sakte|features|what can you do|capabilities|commands)\b/)) {
+    return say(CAPABILITIES_HI, CAPABILITIES_EN);
+  }
+
+  // Small talk.
+  if (hit(/\b(kaise ho|kaise hai|kaisi ho|how are you|kya haal)\b/)) {
+    return say('Main theek hoon, shukriya! Tum kaise ho? Aaj kya karein?', "I'm good, thanks! How are you? What do you want to do today?");
+  }
+  if (hit(/^(hi|hii+|hello|hey|helo|hlo|namaste|namaskar|suprabhat|good morning|good evening|gm)\b/)) {
+    const h = rotate(st, 'greet', [
+      'Namaste' + (who ? ' ' + who : '') + '! Main Zoxora hoon. Aaj kis cheez me help chahiye? Mode chuno ya seedha poocho.',
+      'Hii' + (who ? ' ' + who : '') + '! Batao, aaj kya karna hai? Interview, study, likhna, code ya bas baat.'
+    ]);
+    return say(h, 'Hi' + (who ? ' ' + who : '') + '! I am Zoxora. What do you want to do today? Interview, study, writing, code, or just chat.');
+  }
+  if (hit(/\b(thanks|thank you|thx|shukriya|dhanyavad|dhanyawad|dhanyavaad)\b/) && !hit(/\b(translate|translation|anuvad|matlab|meaning|english|hindi)\b/)) {
+    return say('Welcome! Aur kuch chahiye to bolo.', 'Welcome! Anything else?');
+  }
+  if (hit(/^(bye|alvida|good night|gn|tata|see you|chalo bye|chalo)\b/)) {
+    return say('Theek hai, phir milte hain! Jab bhi chahiye, yahin likh dena.', 'Bye! Come back anytime.');
+  }
+
+  // Interview practice.
+  if (hit(/\binterview\b/)) {
+    st.mode = 'interview';
+    st.qi = 0;
+    return say(
+      'Theek hai, interview practice shuru. Main ek-ek sawal poochunga aur har jawab par chhota feedback dunga. "next" likho to agla sawal, "stop" likho to band.\n\nSawal 1: ' + INTERVIEW_QS[0],
+      'Okay, interview practice. I will ask one question at a time and give short feedback. Type "next" for the next one or "stop" to end.\n\nQuestion 1: ' + INTERVIEW_QS[0]
+    );
+  }
+
+  // Translation of short phrases.
+  let tr = raw.match(/^\s*(translate|translation|anuvad|english me|english mein|hindi me|hindi mein)\s+(.+)$/i);
+  let phrase = tr ? normalizeText(tr[2]) : null;
+  if (!phrase) {
+    const tr2 = normalizeText(raw).match(/^(.+?) ka (matlab|meaning) (english|hindi)( me| mein)?$/);
+    if (tr2) phrase = tr2[1];
+  }
+  if (phrase) {
+    const fwd = PHRASES.find(p => p[0] === phrase);
+    if (fwd) return say('"' + fwd[0] + '" ka English: ' + fwd[1] + '.', fwd[0] + ' in English: ' + fwd[1] + '.');
+    const rev = PHRASES.find(p => normalizeText(p[1]) === phrase);
+    if (rev) return say('"' + rev[1] + '" ka Hinglish: ' + rev[0] + '.', '"' + rev[1] + '" in Hinglish: ' + rev[0] + '.');
+    return say('Ye phrase mere paas nahi hai. Chhota phrase try karo, jaise "dhanyavad" ya "kaise ho".', 'I do not have that phrase. Try a short one like "dhanyavad" or "kaise ho".');
+  }
+
+  // Summary of pasted text.
+  if (hit(/\b(summary|summarize|summarise|saar|short karo|chhota karo|important points)\b/) && raw.length > 80) {
+    let body = raw;
+    const colon = raw.search(/[:\n]/);
+    if (colon > 0 && colon < 40) body = raw.slice(colon + 1);
+    body = body.replace(/\b(summary karo|summarize karo|summary|summarize|summarise|saar|short karo|chhota karo)\b/gi, ' ');
+    return run(st, 'text', summarizeText(body), en);
+  }
+  if (hit(/\b(summary|summarize|summarise|saar)\b/)) {
+    return say('Text paste karo, main important lines chun kar short summary dunga. Naya content nahi jodunga.', 'Paste the text and I will pick the key lines for a short summary. I will not add new content.');
+  }
+
+  // Writing help.
+  if (hit(/\b(email|e mail|mail)\b/) && hit(/\b(likh|draft|bhej|write|template|likho)\b/)) {
+    const mail = [
+      'Subject: Leave request',
+      '',
+      'Namaste [Manager ka naam],',
+      '',
+      'Mujhe [date] ko chhutti chahiye, [reason] ke liye. Mera pending kaam main pehle complete kar dunga, aur team ko handover de dunga.',
+      '',
+      'Dhanyavaad,',
+      '[Tumhara naam]'
+    ].join('\n');
+    return run(st, 'text', 'Ye email draft hai. Brackets me apni detail bharo:\n\n```text\n' + mail + '\n```', en);
+  }
+  if (hit(/\b(insta|instagram)\b/) && hit(/\bcaption\b/)) {
+    const cap = rotate(st, 'insta', CAPTIONS_HI);
+    return run(st, 'text', 'Instagram caption idea:\n\n' + cap + '\n\nAapke post ki detail do to main us hisaab se likh dunga.\n\n#dailylife #mood #hinglish', en);
+  }
+  if (hit(/\bcaption\b/)) {
+    const opts = CAPTIONS_HI.map(c => '- ' + c).join('\n');
+    return run(st, 'text', 'Caption ke 3 options:\n' + opts, en);
+  }
+  if (hit(/\bbio\b/)) {
+    return run(st, 'text', 'Ek sample bio:\n\nDreamer, doer, aur thoda sa chaos. Code, chai aur naya seekhne ka shaukeen.\n\nApne kaam ya shauk ek line me bolo, main us hisaab se bio bana dunga.', en);
+  }
+  if (hit(/\bhashtags?\b/)) {
+    const map = [
+      ['food', '#foodie #foodlover #foodphotography'],
+      ['travel', '#travel #wanderlust #explore'],
+      ['study', '#study #padhai #studygram'],
+      ['fitness', '#fitness #workout #healthyhabits'],
+      ['coding', '#coding #developer #learntocode'],
+      ['chai', '#chai #chailover #chaitime']
+    ];
+    const found = map.find(m => t.indexOf(m[0]) !== -1);
+    const tags = found ? found[1] : '#dailylife #mood #hinglish';
+    return run(st, 'text', 'Hashtags set:\n' + tags + '\n\nTopic batao to main aur sahi tags de sakta hoon.', en);
+  }
+  if (hit(/\blikhne me (help|madad)\b|\bwriting help\b|\bkuch likhna hai\b/)) {
+    st.mode = 'write';
+    return say('Kya likhna hai? Email, bio, caption, Instagram caption ya hashtags? Ek word me bolo, main draft bana dunga.', 'What do you want to write? Email, bio, caption, Instagram caption or hashtags? Tell me in one word.');
+  }
+
+  // Code snippets and help.
+  if (hit(/\bhtml\b/) && hit(/\bbutton\b/)) {
+    return run(st, 'text', 'Ye simple HTML button hai:\n\n```html\n<button onclick="alert(\'Hello!\')">Click me</button>\n```\n\nButton par click hone se alert chalta hai. Alert ka text badal kar apna message daal sakte ho.', en);
+  }
+  if (hit(/\bpython\b/) && hit(/\b(loop|for|range|list)\b/)) {
+    return run(st, 'text', 'Python me for loop:\n\n```python\nfor i in range(1, 4):\n    print("Number:", i)\n```\n\nrange(1, 4) 1, 2, 3 deta hai (4 nahi). Har baar indent wali line chalti hai.', en);
+  }
+  if (hit(/\bpython\b/) && hit(/\bhello world\b|\bhello\b/)) {
+    return run(st, 'text', 'Python me hello world:\n\n```python\nprint("Hello, World!")\n```', en);
+  }
+  if (hit(/\b(javascript|js)\b/) && hit(/\b(loop|for)\b/)) {
+    return run(st, 'text', 'JavaScript me for loop:\n\n```javascript\nfor (let i = 1; i <= 3; i++) {\n  console.log("Number:", i);\n}\n```\n\nYe 1 se 3 tak chalta hai. Har baar i ki value 1 badhti hai.', en);
+  }
+  if (hit(/\b(code|coding|program|function|bug|error|snippet)\b/)) {
+    return run(st, 'text', 'Code paste karo ya batao kis cheez par atke ho. Chhota snippet best rahega. Agar error hai to error ka message bhi bhejo. Main line-by-line samjhane ki koshish karunga.', en);
+  }
+
+  // Plans.
+  if (hit(/\b(workout|exercise|gym|fitness)\b/)) {
+    return run(st, 'workout', null, en);
+  }
+  if (hit(/\b(study plan|padhai ka plan|exam plan|revision plan)\b/)) {
+    return run(st, 'studyplan', null, en);
+  }
+  if (hit(/\b(plan|din|schedule|routine|roz)\b/)) {
+    return run(st, 'day', null, en);
+  }
+
+  // Study explanations.
+  const topicIdx = topicIndexFor(t);
+  if (topicIdx !== -1) {
+    return run(st, 'study', topicIdx, en);
+  }
+  if (hit(/\b(study|padh|padhai|explain|samjhao|samjha|concept|topic|meaning|matlab)\b/)) {
+    st.mode = 'study';
+    return say('Kis topic par help chahiye? Jaise photosynthesis, gravity, pythagoras theorem, water cycle ya mitochondria. Topic ka naam likho.', 'Which topic? For example photosynthesis, gravity, Pythagoras theorem, water cycle or mitochondria. Type the topic name.');
+  }
+
+  // Fun.
+  if (hit(/\b(game|gaming|khel)\b/)) return run(st, 'game', null, en);
+  if (hit(/\b(poem|poetry|kavita|shayari)\b/)) return run(st, 'poem', null, en);
+  if (hit(/\b(joke|mazak|hasao|hasa|funny)\b/)) return run(st, 'joke', null, en);
+  if (hit(/\b(motivat|himmat|hausla|udaas|sad|thak gaya|thaka|demotivat|bore|mann nahi|tension|chinta)\b/)) {
+    return run(st, 'motivation', null, en);
+  }
+
+  // Live data: honest refusal.
+  if (hit(/\b(weather|mausam|news|khabar|price|stock|bitcoin|crypto|score|traffic)\b/)) {
+    return say(
+      'Mere paas live weather, news ya price ka data nahi hai, isliye sahi jawab nahi de sakta. Ye info official app ya site par check karo.',
+      "I do not have live weather, news or price data, so I cannot give a correct answer. Please check an official app or site."
+    );
+  }
+
+  // Honest fallback with a clarifying question.
+  const fbList = en ? FB_EN : FB_HI;
+  return rotate(st, en ? 'fbEn' : 'fb', fbList);
+}
+
+/* =====================================================================
+   PROFILE (name memory, kept in this browser)
+   ===================================================================== */
+
+const PROFILE_KEY = 'zoxora.profile.v1';
+
+function loadProfile() {
+  try {
+    const data = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+    return data && typeof data === 'object' ? data : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function saveProfile() {
+  try {
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  } catch (err) {
+    /* ignore */
+  }
+}
+
+/* =====================================================================
+   STORAGE (chat history in localStorage)
+   ===================================================================== */
+
+const STORE_KEY = 'zoxora.chats.v1';
+const CURRENT_KEY = 'zoxora.current.v1';
+const MAX_CHATS = 50;
+
+function loadChats() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+    if (!Array.isArray(data)) return [];
+    return data.filter(c => c && typeof c.id === 'string' && Array.isArray(c.messages));
+  } catch (err) {
+    return [];
+  }
+}
+
+function saveChats() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(chats.slice(0, MAX_CHATS)));
+  } catch (err) {
+    /* storage full or blocked: the chat still works for this visit */
+  }
+}
+
+function loadCurrentId() {
+  try {
+    return localStorage.getItem(CURRENT_KEY);
+  } catch (err) {
+    return null;
+  }
+}
+
+function saveCurrentId() {
+  try {
+    if (currentId) localStorage.setItem(CURRENT_KEY, currentId);
+    else localStorage.removeItem(CURRENT_KEY);
+  } catch (err) {
+    /* ignore */
+  }
+}
+
+/* =====================================================================
+   STATE + ELEMENTS
+   ===================================================================== */
+
+const $ = id => document.getElementById(id);
+const els = {
+  sidebar: $('sidebar'),
+  scrim: $('scrim'),
+  history: $('history'),
+  chat: $('chat'),
+  welcome: $('welcome'),
+  thread: $('thread'),
+  composer: $('composer'),
+  input: $('input'),
+  sendBtn: $('sendBtn')
+};
+
+const LOGO_SVG = '<img src="data:image/png;base64,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" alt="" draggable="false">';
+
+let chats = loadChats();
+let currentId = loadCurrentId();
+let profile = loadProfile();
+let busy = false;
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const makeId = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function getCurrentChat() {
+  return chats.find(c => c.id === currentId) || null;
+}
+
+/* =====================================================================
+   RICH TEXT (small markdown: bold, inline code, lists, code blocks)
+   Built with DOM nodes and textContent, so pasted text can never run as HTML.
+   ===================================================================== */
+
+function el(tag, cls, text) {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    /* fall through to the older method */
+  }
+  try {
+    const ta = el('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (err) {
+    return false;
+  }
+}
+
+function codeBlock(lang, code) {
+  const wrap = el('div', 'codeblock');
+  const bar = el('div', 'codebar');
+  bar.appendChild(el('span', 'lang', lang || 'code'));
+  const btn = el('button', 'copy-btn', 'Copy');
+  btn.type = 'button';
+  btn.setAttribute('aria-label', 'Code copy karo');
+  btn.addEventListener('click', async () => {
+    const ok = await copyText(code);
+    btn.textContent = ok ? 'Copied' : 'Copy nahi hua';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
+  });
+  bar.appendChild(btn);
+  const pre = el('pre');
+  pre.appendChild(el('code', '', code));
+  wrap.append(bar, pre);
+  return wrap;
+}
+
+function addInline(parent, text) {
+  const parts = String(text).split(/(\*\*[^*\n]+\*\*|`[^`\n]+`)/);
+  for (const part of parts) {
+    if (!part) continue;
+    if (/^\*\*[^*]+\*\*$/.test(part)) parent.appendChild(el('strong', '', part.slice(2, -2)));
+    else if (/^`[^`]+`$/.test(part)) parent.appendChild(el('code', 'inline', part.slice(1, -1)));
+    else parent.appendChild(document.createTextNode(part));
+  }
+}
+
+function renderRich(container, text) {
+  container.textContent = '';
+  container.classList.add('md');
+  const lines = String(text).split('\n');
+  let para = [];
+  let list = null;
+  let listType = null;
+
+  const flushPara = () => {
+    if (!para.length) return;
+    const p = el('p');
+    para.forEach((ln, idx) => {
+      if (idx) p.appendChild(el('br'));
+      addInline(p, ln);
+    });
+    container.appendChild(p);
+    para = [];
+  };
+  const flushList = () => {
+    if (list) container.appendChild(list);
+    list = null;
+    listType = null;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fence = line.match(/^```\s*([\w+-]*)\s*$/);
+    if (fence) {
+      flushPara();
+      flushList();
+      const code = [];
+      i++;
+      while (i < lines.length && !/^```\s*$/.test(lines[i])) {
+        code.push(lines[i]);
+        i++;
+      }
+      container.appendChild(codeBlock(fence[1], code.join('\n')));
+      continue;
+    }
+    const ul = line.match(/^\s*[-*]\s+(.*)$/);
+    const ol = line.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (ul || ol) {
+      flushPara();
+      const type = ul ? 'ul' : 'ol';
+      if (!list || listType !== type) {
+        flushList();
+        list = el(type);
+        listType = type;
+      }
+      const li = el('li');
+      addInline(li, (ul || ol)[1]);
+      list.appendChild(li);
+      continue;
+    }
+    if (!line.trim()) {
+      flushPara();
+      flushList();
+      continue;
+    }
+    flushList();
+    para.push(line);
+  }
+  flushPara();
+  flushList();
+}
+
+/* =====================================================================
+   RENDERING
+   ===================================================================== */
+
+function scrollToEnd(force) {
+  const box = els.chat;
+  const nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 140;
+  if (force || nearBottom) box.scrollTop = box.scrollHeight;
+}
+
+function makeBubble(role, text) {
+  const row = document.createElement('div');
+  row.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+  if (role !== 'user') {
+    const avatar = document.createElement('span');
+    avatar.className = 'logo sm';
+    avatar.innerHTML = LOGO_SVG;
+    row.appendChild(avatar);
+  }
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  if (role === 'user') bubble.textContent = text;
+  else if (text) renderRich(bubble, text);
+  row.appendChild(bubble);
+  els.thread.appendChild(row);
+  return bubble;
+}
+
+function showTyping() {
+  const row = document.createElement('div');
+  row.className = 'msg bot';
+  row.setAttribute('data-typing', '');
+  const avatar = document.createElement('span');
+  avatar.className = 'logo sm';
+  avatar.innerHTML = LOGO_SVG;
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = '<span class="typing" aria-label="Zoxora likh raha hai"><i></i><i></i><i></i></span>';
+  row.append(avatar, bubble);
+  els.thread.appendChild(row);
+  scrollToEnd(true);
+  return row;
+}
+
+async function streamText(node, full) {
+  const chars = Array.from(full);
+  node.textContent = '';
+  let i = 0;
+  while (i < chars.length) {
+    const step = Math.min(chars.length - i, 2 + Math.floor(Math.random() * 3));
+    node.textContent += chars.slice(i, i + step).join('');
+    i += step;
+    scrollToEnd(false);
+    await sleep(18);
+  }
+  renderRich(node, full);
+}
+
+function renderHistory() {
+  els.history.textContent = '';
+  const sorted = [...chats].sort((a, b) => b.updatedAt - a.updatedAt);
+  if (!sorted.length) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-hist';
+    empty.textContent = 'Abhi koi chat nahi hai.';
+    els.history.appendChild(empty);
+    return;
+  }
+  for (const chat of sorted) {
+    const li = document.createElement('li');
+    li.className = 'hist-item' + (chat.id === currentId ? ' active' : '');
+
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'hist-open';
+    open.textContent = chat.title || 'Nayi chat';
+    open.title = chat.title || 'Nayi chat';
+    open.addEventListener('click', () => openChat(chat.id));
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'hist-del';
+    del.textContent = '×';
+    del.setAttribute('aria-label', 'Chat delete karo');
+    del.addEventListener('click', () => deleteChat(chat.id));
+
+    li.append(open, del);
+    els.history.appendChild(li);
+  }
+}
+
+function renderThread() {
+  els.thread.textContent = '';
+  const chat = getCurrentChat();
+  const hasMessages = !!(chat && chat.messages.length);
+  els.welcome.hidden = hasMessages;
+  els.thread.hidden = !hasMessages;
+  if (hasMessages) {
+    for (const m of chat.messages) makeBubble(m.role, m.text);
+  }
+  scrollToEnd(true);
+}
+
+function renderAll() {
+  renderHistory();
+  renderThread();
+}
+
+function autosize() {
+  els.input.style.height = 'auto';
+  els.input.style.height = Math.min(els.input.scrollHeight, 160) + 'px';
+}
+
+function updateSendState() {
+  els.sendBtn.disabled = busy || !els.input.value.trim();
+}
+
+function openSidebar() {
+  els.sidebar.classList.add('open');
+  els.scrim.classList.add('show');
+}
+
+function closeSidebar() {
+  els.sidebar.classList.remove('open');
+  els.scrim.classList.remove('show');
+}
+
+/* =====================================================================
+   ACTIONS
+   ===================================================================== */
+
+function openChat(id) {
+  if (busy) return;
+  currentId = id;
+  saveCurrentId();
+  renderAll();
+  closeSidebar();
+}
+
+function newChat() {
+  if (busy) return;
+  currentId = null;
+  saveCurrentId();
+  renderAll();
+  closeSidebar();
+}
+
+function deleteChat(id) {
+  if (busy) return;
+  const chat = chats.find(c => c.id === id);
+  if (!chat) return;
+  if (!window.confirm('Ye chat delete karni hai?')) return;
+  chats = chats.filter(c => c.id !== id);
+  if (currentId === id) {
+    currentId = null;
+    saveCurrentId();
+  }
+  saveChats();
+  renderAll();
+}
+
+async function sendMessage(raw) {
+  const text = String(raw || '').trim();
+  if (!text || busy) return;
+
+  busy = true;
+  updateSendState();
+  try {
+    let chat = getCurrentChat();
+    if (!chat) {
+      chat = {
+        id: makeId(),
+        title: text.replace(/\s+/g, ' ').slice(0, 36),
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        messages: [],
+        state: {}
+      };
+      chats.unshift(chat);
+      currentId = chat.id;
+      saveCurrentId();
+    }
+
+    chat.messages.push({ role: 'user', text, ts: Date.now() });
+    chat.updatedAt = Date.now();
+    saveChats();
+
+    els.input.value = '';
+    autosize();
+    els.welcome.hidden = true;
+    els.thread.hidden = false;
+    makeBubble('user', text);
+    renderHistory();
+    scrollToEnd(true);
+
+    const typingRow = showTyping();
+    const started = Date.now();
+    let reply;
+    try {
+      reply = String(await getReply(text, chat.messages));
+    } catch (err) {
+      reply = FALLBACK_ERROR;
+    }
+    await sleep(Math.max(0, 500 - (Date.now() - started)));
+    typingRow.remove();
+
+    chat.messages.push({ role: 'bot', text: reply, ts: Date.now() });
+    chat.updatedAt = Date.now();
+    saveChats();
+    renderHistory();
+
+    const bubble = makeBubble('bot', '');
+    bubble.classList.add('caret');
+    await streamText(bubble, reply);
+    bubble.classList.remove('caret');
+  } finally {
+    busy = false;
+    updateSendState();
+  }
+}
+
+/* =====================================================================
+   EVENTS + INIT
+   ===================================================================== */
+
+function init() {
+  document.querySelectorAll('[data-logo]').forEach(node => {
+    node.innerHTML = LOGO_SVG;
+  });
+
+  if (currentId && !getCurrentChat()) {
+    currentId = null;
+    saveCurrentId();
+  }
+
+  $('menuBtn').addEventListener('click', openSidebar);
+  $('closeSide').addEventListener('click', closeSidebar);
+  els.scrim.addEventListener('click', closeSidebar);
+  $('newChatSide').addEventListener('click', newChat);
+  $('topNew').addEventListener('click', newChat);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  els.welcome.addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (chip) sendMessage(chip.dataset.prompt);
+  });
+
+  els.composer.addEventListener('submit', e => {
+    e.preventDefault();
+    sendMessage(els.input.value);
+  });
+
+  els.input.addEventListener('input', () => {
+    autosize();
+    updateSendState();
+  });
+
+  els.input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      sendMessage(els.input.value);
+    }
+  });
+
+  // Another tab changed the history: pick up its copy so this tab never overwrites it.
+  window.addEventListener('storage', e => {
+    if (e.key === STORE_KEY && !busy) {
+      chats = loadChats();
+      if (currentId && !getCurrentChat()) {
+        currentId = null;
+        saveCurrentId();
+      }
+      renderAll();
+    }
+    if (e.key === PROFILE_KEY && !busy) profile = loadProfile();
+  });
+
+  renderAll();
+  updateSendState();
+  autosize();
+}
+
+init();
+</script>
+</body>
+</html>

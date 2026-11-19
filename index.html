@@ -1482,5 +1482,106 @@ function init() {
 
 init();
 </script>
-</body>
-</html>
+<script>
+var FACTS = [
+['Science','Octopus ke 3 dil hote hain. Do dil gills tak khoon bhejte hain aur ek dil poore sharir tak.'],
+['Space','Sun ki roshni Earth tak pahunchne mein lagbhag 8 minute 20 second lagti hai.'],
+['Space','Venus hamare solar system ka sabse garam grah hai (lagbhag 465 degree Celsius), jabki Mercury Sun ke zyada paas hai.'],
+['Space','Venus par ek din (apni dhuri par ek chakkar) uske ek saal se bhi lamba hota hai.'],
+['Space','Mercury Sun ka ek chakkar sirf lagbhag 88 Earth-din mein pura kar leta hai, yani wahan ka saal sabse chhota hai.'],
+['Space','Jupiter sabse bada grah hai. Isme Earth jaise lagbhag 1,300 grah sama sakte hain.'],
+['Space','Saturn ke chhallon (rings) mein mostly barf aur patthar ke tukde hote hain.'],
+['Space','Mars ko laal grah kehte hain, kyunki uski mitti mein iron oxide (zang jaisa) bahut hai.'],
+['Space','Sun ek tara (star) hai, grah nahi. Hamari galaxy ka naam Milky Way hai.'],
+['Space','Sun ke baad hamare sabse paas ka tara Proxima Centauri hai, jo lagbhag 4.2 light-year door hai.'],
+['Space','Chand par gravity Earth ki lagbhag 1/6 hoti hai, isliye wahan insaan bahut oonchi chhalang laga sakta hai.'],
+['Space','Neil Armstrong 1969 mein Apollo 11 mission se Chand par kadam rakhne wale pehle insaan bane.'],
+['India','Chandrayaan-3 ne 23 August 2023 ko Chand ke south pole ke paas safe landing ki. Aisa karne wala India pehla desh hai.'],
+['India','India ka pehla satellite Aryabhata tha, jo 1975 mein launch hua.'],
+['India','Rakesh Sharma 1984 mein space jaane wale pehle Indian bane.'],
+['India','Kalpana Chawla Haryana ke Karnal mein janmi thi aur space jaane wali India mein janmi pehli mahila bani.'],
+['India','Shubhanshu Shukla 2025 mein International Space Station (ISS) jaane wale pehle Indian bane.'],
+['India','ISRO ka headquarter Bengaluru mein hai.'],
+['India','Dr. APJ Abdul Kalam ko "Missile Man of India" kaha jata hai. Wo India ke 11wein President bane.'],
+['Science','Insaan ke sharir mein adult hone par 206 haddiyan hoti hain.'],
+['Science','Skin hamare sharir ka sabse bada organ hai.'],
+['Science','Insaan ka dil ek din mein lagbhag 1 lakh baar dhadakta hai.'],
+['Science','Sound vacuum (khali jagah) mein travel nahi kar sakti, isliye space mein awaaz nahi sunai deti.'],
+['Science','Plants photosynthesis mein dhoop, paani aur carbon dioxide se apna khana banate hain aur oxygen chhodte hain.'],
+['Science','Bijli girne (lightning) ke waqt hawa lagbhag 30,000 degree Celsius tak garam ho sakti hai, jo Sun ki surface se bhi kai guna zyada hai.'],
+['Science','Indradhanush (rainbow) mein 7 rang hote hain: Baingani, Nila, Aasmani, Hara, Peela, Narangi aur Laal (VIBGYOR).'],['Science','Paani sea level par 100 degree Celsius par ubalta hai aur 0 degree Celsius par barf ban jata hai.'],
+['Science','DNA ka double helix structure 1953 mein Watson aur Crick ne samjhaya tha.'],
+['Science','Shahad bahut lamba chalta hai, kyunki usme paani kam aur shakkar zyada hoti hai, jisse bacteria nahi panap pate.'],
+['Science','Tamatar botany ke hisaab se ek fruit hai, sabzi nahi.'],
+['Science','Unth ke kubad (hump) mein paani nahi, mostly fat jama hota hai.'],
+['Science','Cheetah sabse tez daudne wala land animal hai. Wo 100 km/h se zyada ki speed pakad sakta hai.'],
+['Science','Blue whale dharti ka sabse bada jeev hai. Wo lagbhag 30 metre tak lamba ho sakta hai.'],
+['Science','Dolphin aur whale machhli nahi, mammal hain. Wo baccho ko doodh pilate hain aur saans lene ke liye surface par aate hain.'],
+['Science','Dinosaur lagbhag 6.6 crore (66 million) saal pehle khatam ho gaye the.'],
+['Science','Pi (π) ki value lagbhag 3.14159 hoti hai. 14 March ko Pi Day manaya jata hai.'],
+['Science','2 akeli aisi prime number hai jo even (sam) hai.'],
+['Tech','1 byte mein 8 bits hote hain.'],
+['Tech','World Wide Web ka idea Tim Berners-Lee ne 1989 mein CERN mein diya tha.'],
+['Tech','Google ko Larry Page aur Sergey Brin ne 1998 mein shuru kiya.'],
+['Tech','Ada Lovelace ko duniya ki pehli computer programmer maana jata hai.'],
+['Tech','India mein UPI payment system 2016 mein launch hua.'],
+['India','Azaadi 15 August 1947 ko mili, aur Constitution 26 January 1950 se lagu hua.'],
+['India','Gandhi ji ka janm 2 October 1869 ko Porbandar (Gujarat) mein hua tha. Isi din Gandhi Jayanti manai jati hai.'],
+['India','Dr. B. R. Ambedkar Constitution ki Drafting Committee ke chairman the.'],
+['India','Tiranga ke beech ke Ashoka Chakra mein 24 teeliyan (spokes) hoti hain.'],
+['India','India ka rashtriya geet Vande Mataram Bankim Chandra Chattopadhyay ne likha, aur rashtriya gaan Jana Gana Mana Rabindranath Tagore ne.'],
+['India','Rabindranath Tagore 1913 mein Nobel Prize jeetne wale pehle non-European (Asia ke) vyakti bane.'],
+['India','C. V. Raman ko 1930 mein Physics ka Nobel Prize mila. Unki khoj ki yaad mein 28 February ko National Science Day manaya jata hai.'],
+['India','Lok Sabha mein 543 sansad (MPs) chune jate hain.'],
+['India','India mein 28 states aur 8 Union Territories hain. Rajdhani New Delhi hai.'],
+['India','Area ke hisaab se Rajasthan India ka sabse bada rajya hai aur Goa sabse chhota.'],['India','Ganga India ke andar behne wali sabse lambi nadi hai (lagbhag 2,500 km).'],
+['India','Kangchenjunga India ki sabse oonchi choti hai (lagbhag 8,586 metre), aur duniya ki teesri sabse oonchi.'],
+['India','Asiatic sher (lion) jungle mein sirf Gujarat ke Gir National Park aur uske aas-paas milte hain.'],
+['India','Bengal tiger India ka rashtriya pashu hai, mor rashtriya pakshi, aur kamal rashtriya phool.'],
+['India','Gujarat mein bani Statue of Unity (Sardar Patel ki murti) lagbhag 182 metre oonchi hai, jo duniya ki sabse oonchi murtiyon mein hai.'],
+['History','Taj Mahal Agra mein Yamuna nadi ke kinare hai. Shah Jahan ne ise apni begum Mumtaz Mahal ki yaad mein banwaya tha.'],
+['History','Indus Valley Civilization (Harappa aur Mohenjo-daro) lagbhag 4,500 saal pehle bahut vikasit thi.'],
+['History','Zero ko ek number ki tarah use karne ke niyam Bharat ke ganitagya Brahmagupta ne lagbhag 628 isvi mein likhe the.'],
+['History','Samrat Ashoka ne Kalinga ke yuddh ke baad hinsa chhod di aur Buddh dharm ki shiksha ko apnaya.'],
+['History','Babur ne 1526 mein Panipat ki pehli ladai jeet kar Mughal samrajya ki neev rakhi.'],
+['History','Chhatrapati Shivaji Maharaj ka rajyabhishek 1674 mein Raigad kile par hua tha.'],
+['History','Nalanda ek bahut purani university thi, jo aaj ke Bihar mein thi.'],
+['History','Egypt ke Giza ke bade Pyramids lagbhag 4,500 saal purane hain.'],
+['History','Alexander Graham Bell ko 1876 mein telephone ke patent ka shrey diya jata hai.'],
+['Sports','India ne cricket ka pehla World Cup 1983 mein Kapil Dev ki captaincy mein jeeta tha.'],
+['Sports','Neeraj Chopra ne Tokyo Olympics mein javelin throw mein gold medal jeeta. Wo athletics mein India ke pehle Olympic gold medalist hain.'],
+['Sports','Abhinav Bindra 2008 Beijing Olympics mein shooting mein gold jeet kar India ke pehle individual Olympic gold medalist bane.'],
+['Sports','D. Gukesh 2024 mein 18 saal ki umar mein sabse kam umar ke World Chess Champion bane.'],
+['Sports','Shatranj (chess) ka puraana roop "Chaturanga" Bharat mein vikasit hua tha.'],
+['World','Burj Khalifa (Dubai) duniya ki sabse oonchi building hai, lagbhag 828 metre.'],
+['World','Duniya mein 7 continents aur 5 mahasagar (oceans) maane jate hain. Pacific sabse bada mahasagar hai.'],
+['World','Sahara sabse bada garam registan hai, jabki Antarctica sabse bada registan (cold desert) hai.'],
+['World','Mount Everest samudr tal se duniya ki sabse oonchi choti hai (lagbhag 8,849 metre).'],
+['World','Amazon duniya ka sabse bada rainforest hai, jo mostly South America mein hai.']
+];(function () {
+try {
+var st = document.createElement('style');
+st.textContent = ".dk{\n  width:100%;margin:0 0 20px;padding:14px 16px;text-align:left;border-radius:18px;border:1px solid transparent;\n  background:linear-gradient(var(--panel-2),var(--panel-2)) padding-box,var(--grad) border-box;\n  box-shadow:0 0 24px rgba(139,92,246,.18);\n}\n.dk-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}\n.dk-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}\n.dk-tag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}\n.welcome .dk-fact{margin:0 0 12px;font-size:15px;line-height:1.55;color:var(--text);overflow-wrap:anywhere}\n.dk-btn{width:100%;min-height:44px}\n";
+document.head.appendChild(st);
+var w = document.getElementById('welcome');
+var ml = w && w.querySelector('.mode-label');
+if (w && ml) {
+var box = document.createElement('div');
+box.className = 'dk'; box.id = 'dailyCard'; box.hidden = true;
+box.innerHTML = '<div class="dk-top"><span class="dk-title">Aaj ka knowledge</span><span class="dk-tag" id="dkTag"></span></div><p class="dk-fact" id="dkFact"></p><button class="chip dk-btn" id="dkBtn" type="button" data-prompt="">Isake baare mein poochho</button>';
+w.insertBefore(box, ml);
+}
+} catch (e) { }
+
+try {
+var d = new Date();
+var day = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
+var item = FACTS[day % FACTS.length];
+var card = document.getElementById('dailyCard');
+document.getElementById('dkFact').textContent = item[1];
+document.getElementById('dkTag').textContent = item[0];
+document.getElementById('dkBtn').setAttribute('data-prompt', 'Aaj ka knowledge: "' + item[1] + '" Is baare mein simple Hinglish mein thoda aur batao.');
+card.hidden = false;
+} catch (e) { }
+})();
+</script></body></html>
